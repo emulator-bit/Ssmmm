@@ -1,0 +1,259 @@
+-- PIGGY 🐽 HUB by roblx sriptz on YT
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "PiggyHub"
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 550, 0, 400)
+Frame.Position = UDim2.new(0.3, 0, 0.25, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+Frame.Active = true
+Frame.Draggable = true
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "PIGGY 🐽 HUB ---- OWNER (roblx sriptz on YT)"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.BackgroundColor3 = Color3.new(0,0,0)
+Title.Font = Enum.Font.GothamBold
+Title.TextScaled = true
+
+local Line = Instance.new("Frame", Frame)
+Line.Size = UDim2.new(1, 0, 0, 2)
+Line.Position = UDim2.new(0, 0, 0, 40)
+Line.BackgroundColor3 = Color3.new(0, 0, 0)
+
+local SideTab = Instance.new("Frame", Frame)
+SideTab.Size = UDim2.new(0, 120, 1, -42)
+SideTab.Position = UDim2.new(0, 0, 0, 42)
+SideTab.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+
+local ContentFrame = Instance.new("Frame", Frame)
+ContentFrame.Size = UDim2.new(1, -120, 1, -42)
+ContentFrame.Position = UDim2.new(0, 120, 0, 42)
+ContentFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+
+local UIList = Instance.new("UIListLayout", SideTab)
+UIList.Padding = UDim.new(0, 6)
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+local Tabs = {}
+local function CreateTab(name)
+	local Button = Instance.new("TextButton", SideTab)
+	Button.Size = UDim2.new(1, -12, 0, 30)
+	Button.Position = UDim2.new(0, 6, 0, 0)
+	Button.Text = name
+	Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Button.TextColor3 = Color3.new(1, 1, 1)
+	Button.Font = Enum.Font.Gotham
+	Button.TextSize = 14
+
+	local TabFrame = Instance.new("Frame", ContentFrame)
+	TabFrame.Size = UDim2.new(1, 0, 1, 0)
+	TabFrame.BackgroundTransparency = 1
+	TabFrame.Visible = false
+
+	local Layout = Instance.new("UIListLayout", TabFrame)
+	Layout.Padding = UDim.new(0, 6)
+	Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+	Button.MouseButton1Click:Connect(function()
+		for _, t in pairs(Tabs) do
+			t.Frame.Visible = false
+		end
+		TabFrame.Visible = true
+	end)
+
+	Tabs[name] = {Button = Button, Frame = TabFrame}
+	return TabFrame
+end
+
+local function CreateButton(tabFrame, text, func)
+	local Button = Instance.new("TextButton", tabFrame)
+	Button.Size = UDim2.new(1, -10, 0, 30)
+	Button.Text = text
+	Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	Button.TextColor3 = Color3.new(1, 1, 1)
+	Button.Font = Enum.Font.Gotham
+	Button.TextSize = 14
+	Button.MouseButton1Click:Connect(func)
+end
+
+local function CreateToggle(tabFrame, text, callback)
+	local enabled = false
+	local Button = Instance.new("TextButton", tabFrame)
+	Button.Size = UDim2.new(1, -10, 0, 30)
+	Button.Text = text.." [OFF]"
+	Button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+	Button.TextColor3 = Color3.new(1, 1, 1)
+	Button.Font = Enum.Font.Gotham
+	Button.TextSize = 14
+	Button.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		Button.Text = text .. (enabled and " [ON]" or " [OFF]")
+		callback(enabled)
+	end)
+end
+
+-- === Tabs ===
+local main = CreateTab("MAIN")
+local teleport = CreateTab("TELEPORT")
+local piggyhacks = CreateTab("PIGGY HACKS")
+
+-- === MAIN FEATURES ===
+CreateToggle(main, "NO-CLIP", function(state)
+	local conn
+	if state then
+		conn = RunService.Stepped:Connect(function()
+			for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+				if v:IsA("BasePart") then
+					v.CanCollide = false
+				end
+			end
+		end)
+	else
+		if conn then conn:Disconnect() end
+	end
+end)
+
+CreateToggle(main, "FLOAT", function(state)
+	if state then
+		local bv = Instance.new("BodyVelocity", LocalPlayer.Character.HumanoidRootPart)
+		bv.Velocity = Vector3.new(0, 15, 0)
+		bv.MaxForce = Vector3.new(0, 400000, 0)
+		bv.Name = "FloatForce"
+	else
+		local f = LocalPlayer.Character.HumanoidRootPart:FindFirstChild("FloatForce")
+		if f then f:Destroy() end
+	end
+end)
+
+CreateToggle(main, "FLY", function(state)
+	if state then
+		local bv = Instance.new("BodyVelocity", LocalPlayer.Character.HumanoidRootPart)
+		bv.Velocity = Vector3.new(0, 0, 0)
+		bv.MaxForce = Vector3.new(400000, 400000, 400000)
+		bv.Name = "FlyForce"
+		RunService.RenderStepped:Connect(function()
+			bv.Velocity = LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector * 80
+		end)
+	else
+		local f = LocalPlayer.Character.HumanoidRootPart:FindFirstChild("FlyForce")
+		if f then f:Destroy() end
+	end
+end)
+
+CreateButton(main, "Speed Boost [5x]", function()
+	LocalPlayer.Character.Humanoid.WalkSpeed = 80
+end)
+
+CreateButton(main, "Jump Boost [3x]", function()
+	LocalPlayer.Character.Humanoid.JumpPower = 150
+end)
+
+-- Anti Trap
+local antiTrap = false
+CreateToggle(main, "Anti Piggy Trap", function(state)
+	antiTrap = state
+	if state then
+		task.spawn(function()
+			while antiTrap do
+				for _, v in pairs(workspace:GetDescendants()) do
+					if v:IsA("BasePart") and v.Name:lower():find("trap") then
+						if (v.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 10 then
+							v:Destroy()
+						end
+					end
+				end
+				wait(0.5)
+			end
+		end)
+	end
+end)
+
+-- === TELEPORT TAB ===
+CreateButton(teleport, "TP Forward", function()
+	local char = LocalPlayer.Character
+	if char then
+		char:PivotTo(char:GetPivot() + Vector3.new(0, 0, -10))
+	end
+end)
+
+CreateButton(teleport, "TP Backward", function()
+	local char = LocalPlayer.Character
+	if char then
+		char:PivotTo(char:GetPivot() + Vector3.new(0, 0, 10))
+	end
+end)
+
+CreateButton(teleport, "TP to Piggy", function()
+	for _, v in pairs(Players:GetPlayers()) do
+		if v.Name ~= LocalPlayer.Name and v.Character then
+			if v.Character:FindFirstChild("PiggyHead") or v.Name:lower():find("piggy") then
+				LocalPlayer.Character:PivotTo(v.Character:GetPivot())
+			end
+		end
+	end
+end)
+
+-- === PIGGY HACKS ===
+CreateButton(piggyhacks, "TP to Players", function()
+	for _, v in pairs(Players:GetPlayers()) do
+		if v ~= LocalPlayer and v.Character then
+			LocalPlayer.Character:PivotTo(v.Character:GetPivot())
+			break
+		end
+	end
+end)
+
+CreateButton(piggyhacks, "ESP Players", function()
+	for _, v in pairs(Players:GetPlayers()) do
+		if v.Character and not v.Character:FindFirstChild("ESP") then
+			local b = Instance.new("BillboardGui", v.Character)
+			b.Name = "ESP"
+			b.Size = UDim2.new(5,0,1,0)
+			b.AlwaysOnTop = true
+			local t = Instance.new("TextLabel", b)
+			t.Size = UDim2.new(1,0,1,0)
+			t.BackgroundTransparency = 1
+			t.Text = v.Name
+			t.TextColor3 = Color3.new(1,0,0)
+			t.TextScaled = true
+		end
+	end
+end)
+
+CreateButton(piggyhacks, "TP Players to Me", function()
+	for _, v in pairs(Players:GetPlayers()) do
+		if v ~= LocalPlayer and v.Character then
+			v.Character:PivotTo(LocalPlayer.Character:GetPivot())
+		end
+	end
+end)
+
+CreateButton(piggyhacks, "TP All to Piggy", function()
+	local piggy = nil
+	for _, v in pairs(Players:GetPlayers()) do
+		if v ~= LocalPlayer and v.Character and v.Name:lower():find("piggy") then
+			piggy = v.Character:GetPivot()
+		end
+	end
+	if piggy then
+		for _, v in pairs(Players:GetPlayers()) do
+			if v ~= LocalPlayer and v.Character then
+				v.Character:PivotTo(piggy)
+			end
+		end
+	end
+end)
+
+-- Show MAIN by default
+Tabs["MAIN"].Frame.Visible = true
+
