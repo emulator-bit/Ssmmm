@@ -1,0 +1,384 @@
+-- PART 1/2 - BEDWARS 🇨🇦HUB GUI BASE + ESP FEATURES
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name = "BEDWARS_HUB"
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "BEDWARS 🇨🇦HUB"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local BlueLine = Instance.new("Frame", MainFrame)
+BlueLine.Size = UDim2.new(1, 0, 0, 3)
+BlueLine.Position = UDim2.new(0, 0, 0, 40)
+BlueLine.BackgroundColor3 = Color3.fromRGB(0, 153, 255)
+
+local SideTabs = Instance.new("Frame", MainFrame)
+SideTabs.Size = UDim2.new(0, 120, 1, -43)
+SideTabs.Position = UDim2.new(0, 0, 0, 43)
+SideTabs.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+local ContentFrame = Instance.new("Frame", MainFrame)
+ContentFrame.Size = UDim2.new(1, -120, 1, -43)
+ContentFrame.Position = UDim2.new(0, 120, 0, 43)
+ContentFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+
+local function switchTab(name)
+	for _, child in pairs(ContentFrame:GetChildren()) do
+		child.Visible = false
+	end
+	if ContentFrame:FindFirstChild(name) then
+		ContentFrame[name].Visible = true
+	end
+end
+
+local tabNames = {"MAIN", "ESPS", "AIMS", "CRAZY", "TROLL"}
+for i, tabName in ipairs(tabNames) do
+	local TabBtn = Instance.new("TextButton", SideTabs)
+	TabBtn.Size = UDim2.new(1, 0, 0, 40)
+	TabBtn.Position = UDim2.new(0, 0, 0, (i - 1) * 42)
+	TabBtn.Text = tabName
+	TabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TabBtn.Font = Enum.Font.GothamBold
+	TabBtn.TextSize = 16
+
+	local TabFrame = Instance.new("Frame", ContentFrame)
+	TabFrame.Name = tabName
+	TabFrame.Size = UDim2.new(1, 0, 1, 0)
+	TabFrame.BackgroundTransparency = 1
+	TabFrame.Visible = i == 2
+
+	TabBtn.MouseButton1Click:Connect(function()
+		switchTab(tabName)
+	end)
+end
+
+-- 🛏️ Beds ESP
+local espsTab = ContentFrame:FindFirstChild("ESPS")
+local bedHighlights = {}
+
+local function getBeds()
+	local beds = {}
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("Part") and obj.Name:lower():find("bed") then
+			table.insert(beds, obj)
+		end
+	end
+	return beds
+end
+
+local function createHighlight(part, color)
+	local h = Instance.new("Highlight")
+	h.Adornee = part
+	h.FillColor = color or Color3.fromRGB(255, 0, 0)
+	h.OutlineColor = Color3.fromRGB(255, 255, 255)
+	h.FillTransparency = 0.4
+	h.OutlineTransparency = 0
+	h.Parent = part
+	return h
+end
+
+-- ESP BED buttons
+local bedsList = getBeds()
+for i = 1, 9 do
+	local bedPart = bedsList[i]
+	local btn = Instance.new("TextButton", espsTab)
+	btn.Size = UDim2.new(0, 160, 0, 30)
+	btn.Position = UDim2.new(0, 20, 0, (i - 1) * 35 + 10)
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 14
+	btn.Text = "ESP BED " .. i
+
+	btn.MouseButton1Click:Connect(function()
+		if bedPart and bedPart:IsA("Part") and not bedHighlights[bedPart] then
+			bedHighlights[bedPart] = createHighlight(bedPart, Color3.fromRGB(255, 255, 0))
+		end
+	end)
+end
+
+-- ESP PLAYERS
+local function togglePlayerESP()
+	for _, p in pairs(workspace:GetDescendants()) do
+		if p:IsA("Highlight") and p.Name == "PlayerESP" then
+			p:Destroy()
+		end
+	end
+
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local h = Instance.new("Highlight")
+			h.Name = "PlayerESP"
+			h.Adornee = player.Character
+			h.FillColor = Color3.fromRGB(0, 255, 0)
+			h.FillTransparency = 0.4
+			h.OutlineColor = Color3.new(1, 1, 1)
+			h.OutlineTransparency = 0
+			h.Parent = player.Character
+		end
+	end
+end
+
+local playerESPBtn = Instance.new("TextButton", espsTab)
+playerESPBtn.Size = UDim2.new(0, 160, 0, 30)
+playerESPBtn.Position = UDim2.new(0, 200, 0, 10)
+playerESPBtn.Text = "ESP PLAYERS"
+playerESPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+playerESPBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerESPBtn.Font = Enum.Font.Gotham
+playerESPBtn.TextSize = 14
+playerESPBtn.MouseButton1Click:Connect(togglePlayerESP)
+-- AIMS TAB FUNCTIONALITY
+local aimsTab = ContentFrame:FindFirstChild("AIMS")
+
+local function setHitboxSize(size)
+	for _, player in pairs(game.Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local part = player.Character:FindFirstChild("HumanoidRootPart")
+			if part then
+				part.Size = Vector3.new(size, size, size)
+				part.Transparency = 0.5
+				part.Material = Enum.Material.Neon
+				part.Color = Color3.fromRGB(255, 0, 0)
+			end
+		end
+	end
+end
+
+local function createHitboxButton(label, multiplier, positionY)
+	local btn = Instance.new("TextButton", aimsTab)
+	btn.Size = UDim2.new(0, 180, 0, 30)
+	btn.Position = UDim2.new(0, 20, 0, positionY)
+	btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	btn.Text = label
+	btn.Font = Enum.Font.Gotham
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 14
+
+	btn.MouseButton1Click:Connect(function()
+		setHitboxSize(multiplier)
+	end)
+end
+
+createHitboxButton("Hitbox Extender 5x", 5, 10)
+createHitboxButton("Hitbox Extender 10x", 10, 50)
+createHitboxButton("Hitbox Extender 15x", 15, 90)
+createHitboxButton("Hitbox Extender 20x", 20, 130)
+
+-- KILL AURA BUTTON
+local killAuraBtn = Instance.new("TextButton", aimsTab)
+killAuraBtn.Size = UDim2.new(0, 180, 0, 30)
+killAuraBtn.Position = UDim2.new(0, 20, 0, 180)
+killAuraBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+killAuraBtn.Text = "KILL AURA"
+killAuraBtn.Font = Enum.Font.GothamBold
+killAuraBtn.TextColor3 = Color3.new(1, 1, 1)
+killAuraBtn.TextSize = 14
+
+local killAuraEnabled = false
+
+killAuraBtn.MouseButton1Click:Connect(function()
+	killAuraEnabled = not killAuraEnabled
+	killAuraBtn.Text = killAuraEnabled and "KILL AURA [ON]" or "KILL AURA [OFF]"
+
+	while killAuraEnabled do
+		wait(0.25)
+		for _, enemy in pairs(game.Players:GetPlayers()) do
+			if enemy ~= LocalPlayer and enemy.Character and enemy.Character:FindFirstChild("Humanoid") and enemy.Team ~= LocalPlayer.Team then
+				local distance = (LocalPlayer.Character.HumanoidRootPart.Position - enemy.Character.HumanoidRootPart.Position).Magnitude
+				if distance <= 20 then
+					enemy.Character.Humanoid:TakeDamage(20)
+				end
+			end
+		end
+	end
+end)
+-- CRAZY TAB FUNCTIONALITY
+local crazyTab = ContentFrame:FindFirstChild("CRAZY")
+
+-- Utility toggle button creator
+local function createToggleButton(parent, name, yPos, callback)
+	local toggle = false
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(0, 180, 0, 30)
+	btn.Position = UDim2.new(0, 20, 0, yPos)
+	btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+	btn.Text = name .. " [OFF]"
+	btn.Font = Enum.Font.Gotham
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 14
+
+	btn.MouseButton1Click:Connect(function()
+		toggle = not toggle
+		btn.Text = name .. (toggle and " [ON]" or " [OFF]")
+		callback(toggle)
+	end)
+end
+
+-- NO-CLIP
+local noclipConnection
+createToggleButton(crazyTab, "NO-CLIP", 10, function(on)
+	if on then
+		noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+			for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end)
+	else
+		if noclipConnection then
+			noclipConnection:Disconnect()
+		end
+	end
+end)
+
+-- FLY
+local BodyVelocity
+createToggleButton(crazyTab, "FLY", 50, function(on)
+	if on then
+		local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			BodyVelocity = Instance.new("BodyVelocity")
+			BodyVelocity.Velocity = Vector3.new(0, 50, 0)
+			BodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+			BodyVelocity.Parent = hrp
+		end
+	else
+		if BodyVelocity then
+			BodyVelocity:Destroy()
+		end
+	end
+end)
+
+-- FLOAT
+createToggleButton(crazyTab, "FLOAT", 90, function(on)
+	if on then
+		local floatPart = Instance.new("Part")
+		floatPart.Name = "FloatPlatform"
+		floatPart.Size = Vector3.new(5, 1, 5)
+		floatPart.Anchored = true
+		floatPart.CanCollide = true
+		floatPart.Position = LocalPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+		floatPart.Parent = workspace
+	else
+		local fp = workspace:FindFirstChild("FloatPlatform")
+		if fp then fp:Destroy() end
+	end
+end)
+
+-- JUMP BOOST
+createToggleButton(crazyTab, "JUMP BOOST x3", 130, function(on)
+	local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.JumpPower = on and 150 or 50
+	end
+end)
+
+-- SPEED BOOST
+createToggleButton(crazyTab, "SPEED BOOST x5", 170, function(on)
+	local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.WalkSpeed = on and 80 or 16
+	end
+end)
+-- TROLL TAB FUNCTIONALITY
+local trollTab = ContentFrame:FindFirstChild("TROLL")
+
+-- Create Button Utility
+local function createButton(parent, name, yPos, callback)
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(0, 180, 0, 30)
+	btn.Position = UDim2.new(0, 20, 0, yPos)
+	btn.BackgroundColor3 = Color3.fromRGB(110, 20, 20)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.TextSize = 14
+	btn.MouseButton1Click:Connect(callback)
+end
+
+-- TP All to Me
+createButton(trollTab, "TP ALL TO ME", 10, function()
+	local pos = LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
+	if pos then
+		for _, player in pairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				player.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(math.random(-5,5), 2, math.random(-5,5)))
+			end
+		end
+	end
+end)
+
+-- Fake Ban GUI
+createButton(trollTab, "FAKE BAN SCREEN", 50, function()
+	local banGUI = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+	banGUI.Name = "FakeBan"
+
+	local frame = Instance.new("Frame", banGUI)
+	frame.Size = UDim2.new(1, 0, 1, 0)
+	frame.BackgroundColor3 = Color3.new(0, 0, 0)
+	frame.BackgroundTransparency = 0.3
+
+	local label = Instance.new("TextLabel", frame)
+	label.Size = UDim2.new(0.6, 0, 0.2, 0)
+	label.Position = UDim2.new(0.2, 0, 0.4, 0)
+	label.BackgroundColor3 = Color3.new(0.2, 0, 0)
+	label.Text = "YOU HAVE BEEN BANNED!\nReason: Exploiting"
+	label.TextColor3 = Color3.new(1, 0, 0)
+	label.Font = Enum.Font.SourceSansBold
+	label.TextSize = 32
+	label.TextWrapped = true
+end)
+
+-- Spam Sounds
+createButton(trollTab, "SPAM SOUNDS", 90, function()
+	for i = 1, 10 do
+		local sound = Instance.new("Sound", workspace)
+		sound.SoundId = "rbxassetid://9118823105" -- SFX or meme sound
+		sound.Volume = 3
+		sound:Play()
+		game.Debris:AddItem(sound, 2)
+	end
+end)
+
+-- Fling Everyone
+createButton(trollTab, "FLING EVERYONE", 130, function()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			player.Character.HumanoidRootPart.Velocity = Vector3.new(math.random(-400,400), 300, math.random(-400,400))
+		end
+	end
+end)
+
+-- Lag Visuals
+createButton(trollTab, "LAG VISUALS", 170, function()
+	for i = 1, 300 do
+		local part = Instance.new("Part", workspace)
+		part.Anchored = true
+		part.Size = Vector3.new(3,3,3)
+		part.Position = LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(math.random(-20,20), math.random(-10,10), math.random(-20,20))
+		part.BrickColor = BrickColor.Random()
+		game.Debris:AddItem(part, 4)
+	end
+end)
